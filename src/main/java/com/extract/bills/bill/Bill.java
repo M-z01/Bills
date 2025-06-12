@@ -1,5 +1,10 @@
 package com.extract.bills.bill;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 public class Bill {
@@ -12,7 +17,7 @@ public class Bill {
     private int congress;
     private String constitutionalAuthorityStatementText;
     private Cosponsors cosponsors;
-    private String introducedDate;
+    private Instant introducedDate;
     private LatestAction latestAction;
     private List<Law> laws;
     private int number;
@@ -26,8 +31,8 @@ public class Bill {
     private String title;
     private Titles titles;
     private String type;
-    private String updateDate;
-    private String updateDateIncludingText;
+    private Instant updateDate;
+    private Instant updateDateIncludingText;
     private String name;
     private String overview;
     private String status;
@@ -69,17 +74,41 @@ public class Bill {
 	public void setType(String type) {
 		this.type = type;
 	}
-	public String getUpdateDate() {
+	public Instant getUpdateDate() {
 		return updateDate;
 	}
 	public void setUpdateDate(String updateDate) {
-		this.updateDate = updateDate;
+		if (updateDate.contains("T")){
+			// Ensure full format
+			if(updateDate.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}Z$")){
+				updateDate = updateDate.replace("Z", ":00Z");
+			}
+			this.updateDate = Instant.parse(updateDate);
+		} else {
+			//convert from date to instant at start of day UTC
+			this.updateDate = Instant.parse(updateDate + "T00:00:00Z");
+		}
 	}
-	public String getUpdateDateIncludingText() {
+	public void setUpdateDate(Instant instant) {
+		this.updateDate = instant;
+	}
+	public Instant getUpdateDateIncludingText() {
 		return updateDateIncludingText;
 	}
 	public void setUpdateDateIncludingText(String updateDateIncludingText) {
-		this.updateDateIncludingText = updateDateIncludingText;
+		if (updateDateIncludingText.contains("T")){
+			// Ensure full format
+			if(updateDateIncludingText.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}Z$")){
+				updateDateIncludingText = updateDateIncludingText.replace("Z", ":00Z");
+			}
+			this.updateDateIncludingText = Instant.parse(updateDateIncludingText);
+		} else {
+			//convert from date to instant at start of day UTC
+			this.updateDateIncludingText = Instant.parse(updateDateIncludingText + "T00:00:00Z");
+		}
+	}
+	public void setUpdateDateIncludingText(Instant instant) {
+		this.updateDateIncludingText = instant;
 	}
 	public String getUrl() {
 		return url;
@@ -147,10 +176,10 @@ public class Bill {
 	public void setCosponsors(Cosponsors cosponsors) {
 		this.cosponsors = cosponsors;
 	}
-	public String getIntroducedDate() {
+	public Instant getIntroducedDate() {
 		return introducedDate;
 	}
-	public void setIntroducedDate(String introducedDate) {
+	public void setIntroducedDate(Instant introducedDate) {
 		this.introducedDate = introducedDate;
 	}
 	public List<Law> getLaws() {

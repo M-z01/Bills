@@ -2,14 +2,20 @@ package com.extract.bills.bill;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 
-public class findNewestBills {
+
+public class FindNewestBills {
     public static String defaultBill;
     public static DBHandler bills;//db: bills; tables: billsinfo, billsdetail
     public static JsonHandler jsh;
     public ResultSet rs;
 
-    public findNewestBills() {
+    public FindNewestBills() {
         defaultBill = APIAccess.getUrlDefault();
         bills = openConnection("bills_db");
         jsh = new JsonHandler(defaultBill);
@@ -22,8 +28,13 @@ public class findNewestBills {
 
     public boolean shouldUpdate(ResultSet rs, Bill bill) throws SQLException {
         String dbLmd = rs.getString("lmd");
-        String currentLmd = bill.getUpdateDateIncludingText();
-        return !dbLmd.equals(currentLmd);
+        if(bill.getUpdateDateIncludingText() != null){
+            String currentLmd = bill.getUpdateDateIncludingText().toString();
+            return !dbLmd.equals(currentLmd);
+        } else {
+            return !dbLmd.equals(bill.getUpdateDate().toString());
+        }
+        
     }
     //look for potential bill that requires an update in db
     public boolean checkUpdates(JsonHandler inputHander) {
@@ -35,10 +46,10 @@ public class findNewestBills {
 
                 if (!rs.next()) { // Not found in DB
                     addToDB(e);
-                    //add notify here
+                    System.out.printf("New Bill %s-%d detected and added to database.\n", e.getType(), e.getNumber());
                 } else { // Compare and update
                     if (shouldUpdate(rs, e)) {
-                        //updateDB(e, rs);
+                        updateDB(e, rs);
                         //add notify here
                     }
                     
@@ -57,10 +68,15 @@ public class findNewestBills {
 
     
     //update row in db
-    /*
     public void updateDB(Bill bill, ResultSet rs) throws SQLException {
         Timestamp dbLmd = rs.getTimestamp("lmd");
-        Timestamp newLmd = Timestamp.valueOf(bill.getUpdateDateIncludingText());
+        Timestamp newLmd;
+        if (bill.getUpdateDateIncludingText() == null){
+            newLmd = Timestamp.from(bill.getUpdateDate());
+        } else {
+            newLmd = Timestamp.from(bill.getUpdateDateIncludingText());
+        }
+        
 
         if (!dbLmd.equals(newLmd)) {
             rs.updateTimestamp("lmd", newLmd);
@@ -70,17 +86,22 @@ public class findNewestBills {
             System.out.println("No update needed for bill: " + bill.getType() + "-" + bill.getNumber());
         }
     }
-     */
 
     //insert new row into db
     public void addToDB(Bill bill) throws SQLException {
-        String insertString = String.format("INSERT INTO bills_info (type, number, lmd) VALUES ('%s', %d, '%s')", bill.getType(), bill.getNumber(), bill.getUpdateDateIncludingText());
-        int rowsAffected = bills.insert(insertString);
-        System.out.println("Rows affected: " + rowsAffected);
+        bills.insert(bill);
+        //int rowsAffected = bills.insert(insertString);
+        //System.out.println("Rows affected: " + rowsAffected);
     }
 
     public void addDetailToDB(Bill bill) throws SQLException {
         //add billsdetail to database
     }
+
+
+    // public static Timestamp isoToTimestamp(String isoDate){
+    //     Timestamp sqlTimeStamp = Timestamp.from(Instant.parse(isoDate));
+    //     return sqlTimeStamp;
+    // }
     
 }

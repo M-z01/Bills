@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.Arrays;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class JsonHandler {
 	private BillJson bJsn;
@@ -15,10 +16,11 @@ public class JsonHandler {
 		try {
 			URL url = new URL(link);
 			InputStreamReader reader = new InputStreamReader(url.openStream());
+			Gson gson = new GsonBuilder().registerTypeAdapter(Bill.class, new BillDeserializer()).create();
 			if(stringContainsItemFromList(link, Bill.chambers)) {//specific bill
-				bJsnSpecific = new Gson().fromJson(reader, BillJsonSpecific.class);
+				bJsnSpecific = gson.fromJson(reader, BillJsonSpecific.class);
 			} else {
-				bJsn = new Gson().fromJson(reader, BillJson.class);//list of bills
+				bJsn = gson.fromJson(reader, BillJson.class);//list of bills
 			}
 			
 			

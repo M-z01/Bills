@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 public class DBHandler {
 	private String url;
 	private String username;
@@ -14,9 +15,9 @@ public class DBHandler {
 	private String DBName;
 	
 	public DBHandler(String DBName) {
-		this.url = "jdbc:mysql://localhost:3306/" + DBName;
+		this.url = "jdbc:mysql://localhost:3306/" + DBName + "?serverTimezone=UTC";
 		this.username = "root";
-		this.password = "";
+		this.password = PasswordReader.getPassword();
 		
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
@@ -47,6 +48,20 @@ public class DBHandler {
 		int rowAffected = pst.executeUpdate();
 		pst.close();
 		return rowAffected;
+	}
+
+	public int insert(Bill bill) throws SQLException {
+		String sql = "INSERT INTO bills_info (type, number, lmd) VALUES (?, ?, ?)";
+		try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
+			pst.setString(1, bill.getType());
+			pst.setInt(2, bill.getNumber());
+			if (bill.getUpdateDateIncludingText() != null) {
+				pst.setTimestamp(3, Timestamp.from(bill.getUpdateDateIncludingText()));
+			} else {
+				pst.setTimestamp(3, Timestamp.from(bill.getUpdateDate()));
+			}
+			return pst.executeUpdate();
+		}
 	}
 
 	public int update(String updateString) throws SQLException {

@@ -24,7 +24,7 @@ public class testRun {
 		JsonHandler JsH = new JsonHandler(defaultBills);
 		//JsonHandler JsH2 = new JsonHandler(detailedBill);
 
-		findNewestBills f = new findNewestBills();
+		FindNewestBills f = new FindNewestBills();
 		System.out.println("success");
 		
 		// JsH.getbJsn().getBills().forEach((e) -> {
