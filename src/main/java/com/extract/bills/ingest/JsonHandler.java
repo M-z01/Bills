@@ -1,13 +1,17 @@
-package com.extract.bills.bill;
+package com.extract.bills.ingest;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import com.extract.bills.bill.Bill;
+import com.extract.bills.bill.BillJson;
+import com.extract.bills.bill.BillJsonSpecific;
+
 
 public class JsonHandler {
 	private BillJson bJsn;

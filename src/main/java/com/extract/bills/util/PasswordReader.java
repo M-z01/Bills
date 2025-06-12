@@ -1,4 +1,4 @@
-package com.extract.bills.bill;
+package com.extract.bills.util;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.IOException;

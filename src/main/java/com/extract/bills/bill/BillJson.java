@@ -1,5 +1,6 @@
 package com.extract.bills.bill;
 
+import com.extract.bills.ingest.Request;
 import java.util.List;
 
 public class BillJson {

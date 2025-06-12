@@ -1,4 +1,4 @@
-package com.extract.bills.bill;
+package com.extract.bills.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;

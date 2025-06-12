@@ -1,10 +1,6 @@
 package com.extract.bills.bill;
 
-import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 
 public class Bill {

@@ -1,4 +1,9 @@
-package com.extract.bills.bill;
+package com.extract.bills.util;
+
+import com.extract.bills.bill.APIAccess;
+import com.extract.bills.ingest.JsonHandler;
+import com.extract.bills.service.FindNewestBills;
+
 public class testRun {
 	@SuppressWarnings("unused")
 	public static void main(String args[]) {

@@ -1,9 +1,7 @@
-package com.extract.bills.bill;
+package com.extract.bills.ingest;
 
 import java.lang.reflect.Type;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-
+import com.extract.bills.bill.Bill;
 import com.google.gson.*;
 
 public class BillDeserializer implements JsonDeserializer<Bill> {

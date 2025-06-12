@@ -1,12 +1,13 @@
-package com.extract.bills.bill;
+package com.extract.bills.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeParseException;
+
+import com.extract.bills.bill.APIAccess;
+import com.extract.bills.bill.Bill;
+import com.extract.bills.db.DBHandler;
+import com.extract.bills.ingest.JsonHandler;
 
 
 public class FindNewestBills {
@@ -83,25 +84,17 @@ public class FindNewestBills {
             rs.updateRow();
             System.out.printf("Updated bill: %s-%d with new lmd: %s%n", bill.getType(), bill.getNumber(), newLmd);
         } else {
-            System.out.println("No update needed for bill: " + bill.getType() + "-" + bill.getNumber());
+            //System.out.println("No update needed for bill: " + bill.getType() + "-" + bill.getNumber());
         }
     }
 
     //insert new row into db
     public void addToDB(Bill bill) throws SQLException {
         bills.insert(bill);
-        //int rowsAffected = bills.insert(insertString);
-        //System.out.println("Rows affected: " + rowsAffected);
     }
 
     public void addDetailToDB(Bill bill) throws SQLException {
         //add billsdetail to database
     }
-
-
-    // public static Timestamp isoToTimestamp(String isoDate){
-    //     Timestamp sqlTimeStamp = Timestamp.from(Instant.parse(isoDate));
-    //     return sqlTimeStamp;
-    // }
     
 }

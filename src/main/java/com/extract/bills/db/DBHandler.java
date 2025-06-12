@@ -1,4 +1,4 @@
-package com.extract.bills.bill;
+package com.extract.bills.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,6 +7,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import com.extract.bills.bill.Bill;
+import com.extract.bills.util.PasswordReader;
+
 public class DBHandler {
 	private String url;
 	private String username;

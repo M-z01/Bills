@@ -1,5 +1,6 @@
 package com.extract.bills.bill;
 
+import com.extract.bills.ingest.Request;
 
 public class BillJsonSpecific {
 	private Bill bill;

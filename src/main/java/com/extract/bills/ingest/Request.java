@@ -1,4 +1,4 @@
-package com.extract.bills.bill;
+package com.extract.bills.ingest;
 
 
 public class Request {
