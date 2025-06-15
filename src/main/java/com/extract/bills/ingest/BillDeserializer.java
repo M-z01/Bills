@@ -5,17 +5,31 @@ import com.extract.bills.bill.Bill;
 import com.google.gson.*;
 
 public class BillDeserializer implements JsonDeserializer<Bill> {
-    public Bill deserialize(JsonElement json, Type tyoeOfT, JsonDeserializationContext context) throws JsonParseException {
+    @Override
+    public Bill deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject obj = json.getAsJsonObject();
 
-        Bill bill = new Bill();
-        bill.setType(obj.get("type").getAsString());
-        bill.setNumber(Integer.parseInt(obj.get("number").getAsString()));
-        bill.setUrl(obj.get("url").getAsString());
 
-        //Normalize the date
-        String rawDate = obj.get("updateDateIncludingText").getAsString();
-        bill.setUpdateDateIncludingText(rawDate);
+        if (obj.has("bill")) {
+            obj = obj.getAsJsonObject("bill");
+        }
+
+        Bill bill = new Bill();
+
+        JsonElement typeElem = obj.get("type");
+        if (typeElem != null && !typeElem.isJsonNull()) bill.setType(typeElem.getAsString());
+
+        JsonElement numberElem = obj.get("number");
+        if (numberElem != null && !numberElem.isJsonNull()) bill.setNumber(Integer.parseInt(numberElem.getAsString()));
+
+        JsonElement urlElem = obj.get("url");
+        if (urlElem != null && !urlElem.isJsonNull()) bill.setUrl(urlElem.getAsString());
+
+        JsonElement updateDateElem = obj.get("updateDateIncludingText");
+        if (updateDateElem != null && !updateDateElem.isJsonNull()) bill.setUpdateDateIncludingText(updateDateElem.getAsString());
+
+
+
         return bill;
     }
 }

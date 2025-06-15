@@ -1,8 +1,11 @@
 package com.extract.bills.service;
 
+import java.sql.Timestamp;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
 import com.extract.bills.bill.APIAccess;
 import com.extract.bills.bill.Bill;
@@ -12,13 +15,12 @@ import com.extract.bills.ingest.JsonHandler;
 
 public class FindNewestBills {
     public static String defaultBill;
-    public static DBHandler bills;//db: bills; tables: billsinfo, billsdetail
+    public static DBHandler db;//db: bills; tables: billsinfo, billsdetail
     public static JsonHandler jsh;
     public ResultSet rs;
 
     public FindNewestBills() {
         defaultBill = APIAccess.getUrlDefault();
-        bills = openConnection("bills_db");
         jsh = new JsonHandler(defaultBill);
         checkUpdates(jsh);
     }
@@ -28,73 +30,95 @@ public class FindNewestBills {
     }
 
     public boolean shouldUpdate(ResultSet rs, Bill bill) throws SQLException {
-        String dbLmd = rs.getString("lmd");
+        java.sql.Timestamp dbLmd = rs.getTimestamp("lmd");
         if(bill.getUpdateDateIncludingText() != null){
-            String currentLmd = bill.getUpdateDateIncludingText().toString();
+            java.sql.Timestamp currentLmd = Timestamp.from(bill.getUpdateDateIncludingText());
             return !dbLmd.equals(currentLmd);
         } else {
             return !dbLmd.equals(bill.getUpdateDate().toString());
         }
-        
     }
+
     //look for potential bill that requires an update in db
     public boolean checkUpdates(JsonHandler inputHander) {
-    try {
-        for (Bill e : inputHander.getbJsn().getBills()) {
-            try {
-                String queryString = String.format("SELECT * FROM bills_info WHERE (type = '%s' AND number = %d)", e.getType(), e.getNumber());
-                rs = bills.query(queryString);
-
-                if (!rs.next()) { // Not found in DB
-                    addToDB(e);
-                    System.out.printf("New Bill %s-%d detected and added to database.\n", e.getType(), e.getNumber());
-                } else { // Compare and update
-                    if (shouldUpdate(rs, e)) {
-                        updateDB(e, rs);
-                        //add notify here
-                    }
-                    
-                }
-
-                rs.close(); //close result set 
-            } catch (SQLException e1) {
-                e1.printStackTrace(); //Log but don't close shared connection
-            }
+        if (inputHander.getbJsn() == null || inputHander.getbJsn().getBills() == null) {
+            System.out.println("No bills found in the JSON handler.");
+            return false;
         }
-    } finally {
-        bills.connClose(); //Close connection once after loop
-    }
-    return false;
-}
 
-    
-    //update row in db
-    public void updateDB(Bill bill, ResultSet rs) throws SQLException {
-        Timestamp dbLmd = rs.getTimestamp("lmd");
-        Timestamp newLmd;
-        if (bill.getUpdateDateIncludingText() == null){
-            newLmd = Timestamp.from(bill.getUpdateDate());
-        } else {
-            newLmd = Timestamp.from(bill.getUpdateDateIncludingText());
+        List<Bill> newBills = new ArrayList<>();
+        List<Bill> updateBills = new ArrayList<>();
+        ResultSet rs = null; // new result set
+        db = openConnection("bills_db"); // Ensure DB connection is opened
+        if (db == null) {
+            System.out.println("Failed to connect to the database.");
+            return false;
         }
         
+        try {
+            for (Bill e : inputHander.getbJsn().getBills()) {
+                try {
+                    String queryString = String.format("SELECT * FROM bills_info WHERE (type = '%s' AND number = %d)", e.getType(), e.getNumber());
+                    rs = db.query(queryString);
 
-        if (!dbLmd.equals(newLmd)) {
-            rs.updateTimestamp("lmd", newLmd);
-            rs.updateRow();
-            System.out.printf("Updated bill: %s-%d with new lmd: %s%n", bill.getType(), bill.getNumber(), newLmd);
-        } else {
-            //System.out.println("No update needed for bill: " + bill.getType() + "-" + bill.getNumber());
+                    if (!rs.next()) { // Not found in DB
+                        newBills.add(e);// Collect for batch insert
+                        //add notify here
+                    } else { // Compare and update
+                        if (shouldUpdate(rs, e)) {
+                            updateBills.add(e); // Collect for batch update
+                            System.out.printf("Bill %s-%d requires update in database.\n", e.getType(), e.getNumber());
+                            //add notify here
+                        }
+                    }
+                    rs.close(); //close result set 
+                } catch (SQLException e1) {
+                    e1.printStackTrace(); //Log but don't close shared connection
+                }
+            }
+            if (!newBills.isEmpty()){
+                addToDB(newBills);
+            }
+        } finally {
+            db.connClose(); //Close connection once after loop
         }
+    return false;
     }
 
     //insert new row into db
-    public void addToDB(Bill bill) throws SQLException {
-        bills.insert(bill);
-    }
+    public void addToDB(List<Bill> bills) {
+        db.insertToInfo(bills);
+        List<Bill> detailedBills = new ArrayList<>();
 
-    public void addDetailToDB(Bill bill) throws SQLException {
-        //add billsdetail to database
+        // Use a thread pool
+        ExecutorService executor = Executors.newFixedThreadPool(Math.min(10, bills.size()));
+        List<Future<Bill>> futures = new ArrayList<>();
+
+        for (Bill bill : bills) {
+            futures.add(executor.submit(() -> {
+                JsonHandler handler = new JsonHandler(APIAccess.getUrlspecific("118", bill.getType(), String.valueOf(bill.getNumber())));
+                if (handler.getbJsnSpecific() != null && handler.getbJsnSpecific().getBill() != null) {
+                    return handler.getbJsnSpecific().getBill();
+                } else {
+                    System.out.println("No detailed bill found for " + bill.getType() + " " + bill.getNumber());
+                    return null;
+                }
+            }));
+        }
+
+        // Collect results
+        for (Future<Bill> future : futures) {
+            try {
+                Bill detailed = future.get();
+                if (detailed != null) {
+                    detailedBills.add(detailed);
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        executor.shutdown();
+        db.insertToDetail(detailedBills);
     }
-    
 }

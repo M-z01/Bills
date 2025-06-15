@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 public class Bill {
-	public static String[] chambers = {"/hr/", "/s/", "/hjres/", "/sjres/", "/hconres/", "/sconres/", "/hres/", "/sres/"};
+	public static String[] chambers = {"/HR/", "/S/", "/HJRES/", "/SJRES/", "/HCONRES/", "/SCONRES/", "/HRES/", "/SRES/"};
 	private Actions actions;
     private Amendments amendments;
     private List<CboCostEstimate> cboCostEstimates;

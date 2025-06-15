@@ -20,13 +20,12 @@ public class JsonHandler {
 		try {
 			URL url = new URL(link);
 			InputStreamReader reader = new InputStreamReader(url.openStream());
-			Gson gson = new GsonBuilder().registerTypeAdapter(Bill.class, new BillDeserializer()).create();
+			Gson gson = new GsonBuilder().registerTypeAdapter(java.time.Instant.class, new InstantTypeAdapter()).create();
 			if(stringContainsItemFromList(link, Bill.chambers)) {//specific bill
 				bJsnSpecific = gson.fromJson(reader, BillJsonSpecific.class);
 			} else {
 				bJsn = gson.fromJson(reader, BillJson.class);//list of bills
 			}
-			
 			
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
@@ -42,6 +41,14 @@ public class JsonHandler {
 	public void setbJsn(BillJson bJsn) {
 		this.bJsn = bJsn;
 	}
+
+	public BillJsonSpecific getbJsnSpecific() {
+		return bJsnSpecific;
+	}
+	public void setbJsnSpecific(BillJsonSpecific bJsnSpecific) {
+		this.bJsnSpecific = bJsnSpecific;
+	}
+
 	public static boolean stringContainsItemFromList(String inputStr, String[] items) {
 		return Arrays.stream(items).anyMatch(inputStr::contains);
 	}
