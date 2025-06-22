@@ -1,5 +1,6 @@
 package com.extract.bills.bill;
 
+import java.sql.ResultSet;
 import java.time.Instant;
 import java.util.List;
 
@@ -34,6 +35,14 @@ public class Bill {
     private String status;
     private String url;
     
+	public Bill() {
+		//default constructor
+	}
+
+	public Bill(ResultSet rs) {
+		//TODO
+	}
+
 	public int getCongress() {
 		return congress;
 	}

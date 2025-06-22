@@ -1,11 +1,14 @@
 package com.extract.bills.service;
 
-import java.sql.Timestamp;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import com.extract.bills.bill.APIAccess;
 import com.extract.bills.bill.Bill;
@@ -120,5 +123,9 @@ public class FindNewestBills {
 
         executor.shutdown();
         db.insertToDetail(detailedBills);
+    }
+
+    public void updateToDB(List<Bill> bills) {
+        
     }
 }

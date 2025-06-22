@@ -1,11 +1,22 @@
 package com.extract.bills.db;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 
-import com.extract.bills.bill.*;
+import com.extract.bills.bill.Bill;
+import com.extract.bills.bill.CboCostEstimate;
+import com.extract.bills.bill.CommitteeReport;
+import com.extract.bills.bill.Law;
+import com.extract.bills.bill.Sponsor;
 
 public class DBHandler {
     private String url;
@@ -131,9 +142,9 @@ public class DBHandler {
         insertToLatestActions(bills);
     }
 
-    public void insertToActions(List<Bill> bills) throws SQLException {
+    private void insertToActions(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_actions (type, number, count, url) VALUES (?, ?, ?, ?)
+                INSERT INTO bill_actions (type, number, bill_actions_count, bill_actions_url) VALUES (?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -154,9 +165,9 @@ public class DBHandler {
         System.out.println("Inserted " + bills.size() + " new bills into bill_actions.");
     }
 
-    public void insertToAmendments(List<Bill> bills) throws SQLException {
+    private void insertToAmendments(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_amendments (type, number, count, url) VALUES (?, ?, ?, ?)
+                INSERT INTO bill_amendments (type, number, bill_amendments_count, bill_amendments_url) VALUES (?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -177,9 +188,10 @@ public class DBHandler {
         System.out.println("Inserted " + bills.size() + " new bills into bill_amendments.");
     }
 
-    public void insertToCboCostEstimates(List<Bill> bills) throws SQLException {
+    private void insertToCboCostEstimates(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_cbo_cost_estimates (type, number, description, pub_date, title, url) VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO bill_cbo_cost_estimates (type, number, bill_cbo_cost_estimate_description, bill_cbo_cost_estimate_pub_date, 
+                bill_cbo_cost_estimate_title, bill_cbo_cost_estimate_url) VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -202,9 +214,9 @@ public class DBHandler {
         System.out.println("Inserted " + bills.size() + " new bills into bill_cbo_cost_estimates.");
     }
 
-    public void insertToCommitteeReports(List<Bill> bills) throws SQLException {
+    private void insertToCommitteeReports(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_committee_reports (type, number, citation, url) VALUES (?, ?, ?, ?)
+                INSERT INTO bill_committee_reports (type, number, bill_committee_report_citation, bill_committee_report_url) VALUES (?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -224,9 +236,9 @@ public class DBHandler {
         System.out.println("Inserted " + bills.size() + " new bills into bill_committee_reports.");
     }
 
-    public void insertToCommittees(List<Bill> bills) throws SQLException {
+    private void insertToCommittees(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_committees (type, number, count, url) VALUES (?, ?, ?, ?)
+                INSERT INTO bill_committees (type, number, bill_committees_count, bill_committees_url) VALUES (?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -247,9 +259,9 @@ public class DBHandler {
         System.out.println("Inserted " + bills.size() + " new bills into bill_committees.");
     }
 
-    public void insertToCosponsors(List<Bill> bills) throws SQLException {
+    private void insertToCosponsors(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_cosponsors (type, number, count, count_including_withdrawn, url) VALUES (?, ?, ?, ?, ?)
+                INSERT INTO bill_cosponsors (type, number, bill_cosponsors_count, bill_cosponsors_count_including_withdrawn, bill_cosponsors_url) VALUES (?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -276,9 +288,9 @@ public class DBHandler {
         System.out.println("Inserted " + bills.size() + " new bills into bill_cosponsors.");
     }
 
-    public void insertToLaws(List<Bill> bills) throws SQLException {
+    private void insertToLaws(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_laws (type, number, number_law, type_law) VALUES (?, ?, ?, ?)
+                INSERT INTO bill_laws (type, number, bill_law_number, bill_law_type) VALUES (?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -298,10 +310,11 @@ public class DBHandler {
         System.out.println("Inserted " + bills.size() + " new bills into bill_laws.");
     }
 
-    public void insertToSponsors(List<Bill> bills) throws SQLException {
+    private void insertToSponsors(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_sponsors (type, number, bioguide_id, district, first_name, last_name, middle_name, full_name,
-                is_by_request, party, state, url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO bill_sponsors (type, number, bill_sponsor_bioguide_id, bill_sponsor_district, bill_sponsor_first_name, 
+                bill_sponsor_last_name, bill_sponsor_middle_name, bill_sponsor_full_name,
+                bill_sponsor_is_by_request, bill_sponsor_party, bill_sponsor_state, bill_sponsor_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -333,9 +346,9 @@ public class DBHandler {
         System.out.println("Inserted " + bills.size() + " new bills into bill_sponsors.");
     }
 
-    public void insertToSubjects(List<Bill> bills) throws SQLException {
+    private void insertToSubjects(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_subjects (type, number, count, url) VALUES (?, ?, ?, ?)
+                INSERT INTO bill_subjects (type, number, bill_subjects_count, bill_subjects_url) VALUES (?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -356,9 +369,9 @@ public class DBHandler {
         System.out.println("Inserted " + bills.size() + " new bills into bill_subjects.");
     }
 
-    public void insertToSummaries(List<Bill> bills) throws SQLException {
+    private void insertToSummaries(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_summaries (type, number, count, url) VALUES (?, ?, ?, ?)
+                INSERT INTO bill_summaries (type, number, bill_summaries_count, bill_summaries_url) VALUES (?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -379,9 +392,9 @@ public class DBHandler {
         System.out.println("Inserted " + bills.size() + " new bills into bill_summaries.");
     }
 
-    public void insertToTextVersions(List<Bill> bills) throws SQLException {
+    private void insertToTextVersions(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_text_versions (type, number, count, url) VALUES (?, ?, ?, ?)
+                INSERT INTO bill_text_versions (type, number, bill_text_versions_count, bill_text_versions_url) VALUES (?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -402,9 +415,9 @@ public class DBHandler {
         System.out.println("Inserted " + bills.size() + " new bills into bill_text_versions.");
     }
 
-    public void insertToTitles(List<Bill> bills) throws SQLException {
+    private void insertToTitles(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_titles (type, number, count, url) VALUES (?, ?, ?, ?)
+                INSERT INTO bill_titles (type, number, bill_titles_count, bill_titles_url) VALUES (?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -425,9 +438,9 @@ public class DBHandler {
         System.out.println("Inserted " + bills.size() + " new bills into bill_titles.");
     }
 
-    public void insertToRelatedBills(List<Bill> bills) throws SQLException {
+    private void insertToRelatedBills(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_related_bills (type, number, count, url) VALUES (?, ?, ?, ?)
+                INSERT INTO bill_related_bills (type, number, bill_related_bills_count, bill_related_bills_url) VALUES (?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -448,9 +461,9 @@ public class DBHandler {
         System.out.println("Inserted " + bills.size() + " new bills into bill_related_bills.");
     }
 
-    public void insertToLatestActions(List<Bill> bills) throws SQLException {
+    private void insertToLatestActions(List<Bill> bills) throws SQLException {
         String sql = """
-                INSERT INTO bill_latest_actions (type, number, action_date, text) VALUES (?, ?, ?, ?)
+                INSERT INTO bill_latest_actions (type, number, bill_latest_action_date, bill_latest_action_text) VALUES (?, ?, ?, ?)
                 """;
         try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
             for (Bill bill : bills) {
@@ -518,6 +531,24 @@ public class DBHandler {
     }
     System.out.println("Updated " + bills.size() + " bills in bills_detail.");
 }
+
+    public Bill getBillFromDB(String type, int number) throws SQLException {
+        String sql = """
+                SELECT * FROM bills_info, bills_detail, bill_actions, bill_amendments, bill_committees, bill_cosponsors,
+	            bill_latest_actions, bill_related_bills, bill_subjects, bill_summaries, bill_text_versions, bill_titles
+                WHERE type = ? AND number = ?;
+                """;
+        try (PreparedStatement pst = this.conn.prepareStatement(sql)) {
+            pst.setString(1, type);
+            pst.setInt(2, number);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    return new Bill(rs);
+                }
+            }
+        }
+        return null;
+    }
 
     public Connection getConn() {
         return this.conn;
