@@ -38,7 +38,7 @@ public class FindNewestBills {
             java.sql.Timestamp currentLmd = Timestamp.from(bill.getUpdateDateIncludingText());
             return !dbLmd.equals(currentLmd);
         } else {
-            return !dbLmd.equals(bill.getUpdateDate().toString());
+            return !dbLmd.equals(Timestamp.from(bill.getUpdateDate()));
         }
     }
 
@@ -51,7 +51,7 @@ public class FindNewestBills {
 
         List<Bill> newBills = new ArrayList<>();
         List<Bill> updateBills = new ArrayList<>();
-        ResultSet rs = null; // new result set
+        ResultSet rs; // new result set
         db = openConnection("bills_db"); // Ensure DB connection is opened
         if (db == null) {
             System.out.println("Failed to connect to the database.");
@@ -81,6 +81,9 @@ public class FindNewestBills {
             }
             if (!newBills.isEmpty()){
                 addToDB(newBills);
+            }
+            if (!updateBills.isEmpty()) {
+                //updateToDB(updateBills);
             }
         } finally {
             db.connClose(); //Close connection once after loop
@@ -126,6 +129,6 @@ public class FindNewestBills {
     }
 
     public void updateToDB(List<Bill> bills) {
-        
+        db.auditAndUpdate(bills);
     }
 }
